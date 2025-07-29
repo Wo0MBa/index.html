@@ -2,98 +2,127 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Распад на осколки</title>
+  <title>Курсор со звездами</title>
   <style>
     body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
-      background: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: #000;
       height: 100vh;
+      cursor: none;
     }
 
-    #object {
-      width: 300px;
-      height: 300px;
-      background: url('https://www.pnguniverse.com/wp-content/uploads/2021/03/Grogu-the-child-1280x896.png') center/cover;
-      cursor: pointer;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-      background-size: cover;
-    }
-
-    #object:hover {
-      transform: scale(1.03);
-    }
-
-    .shard {
+    .star {
       position: absolute;
       pointer-events: none;
-      border-radius: 4px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #fff, 0 0 20px #fff;
+      transform: translate(-50%, -50%);
+    }
+
+    .cursor-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      box-shadow: 0 0 10px #fff, 0 0 20px #fff;
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
-  <div id="object"></div>
+  <div class="cursor-dot"></div>
 
   <script>
-    document.getElementById('object').addEventListener('click', function() {
-      const rect = this.getBoundingClientRect();
-      const shards = 30;
-      this.style.display = 'none';
-
-      for (let i = 0; i < shards; i++) {
-        const shard = document.createElement('div');
-        shard.className = 'shard';
-        
-        // Размер осколка
-        const size = 15 + Math.random() * 25;
-        shard.style.width = `${size}px`;
-        shard.style.height = `${size}px`;
-        
-        // Фон осколка — часть оригинальной картинки
-        shard.style.background = `url('https://www.pnguniverse.com/wp-content/uploads/2021/03/Grogu-the-child-1280x896.png')`;
-        shard.style.backgroundSize = '300px 300px';
-        shard.style.backgroundPosition = `-${Math.random() * 280}px -${Math.random() * 280}px`;
-        
-        // Начальная позиция
-        shard.style.left = `${rect.left + rect.width / 2}px`;
-        shard.style.top = `${rect.top + rect.height / 2}px`;
-        
-        document.body.appendChild(shard);
-
-        // Движение осколка
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 3 + Math.random() * 6;
-        const vx = Math.cos(angle) * speed;
-        const vy = Math.sin(angle) * speed;
-        const rotation = (Math.random() - 0.5) * 30;
-
-        let x = rect.left + rect.width / 2;
-        let y = rect.top + rect.height / 2;
-        let rot = 0;
-
-        const move = () => {
-          x += vx;
-          y += vy;
-          rot += rotation;
-          shard.style.left = `${x}px`;
-          shard.style.top = `${y}px`;
-          shard.style.transform = `rotate(${rot}deg)`;
-          shard.style.opacity = parseFloat(shard.style.opacity || 1) - 0.015;
-
-          if (parseFloat(shard.style.opacity) > 0) {
-            requestAnimationFrame(move);
-          } else {
-            shard.remove();
-          }
-        };
-        move();
-      }
+    const cursorDot = document.querySelector('.cursor-dot');
+    const stars = [];
+    const maxStars = 50;
+    
+    // Скрыть стандартный курсор и следовать за мышью
+    document.addEventListener('mousemove', (e) => {
+      cursorDot.style.left = e.clientX + 'px';
+      cursorDot.style.top = e.clientY + 'px';
+      
+      // Создать новую звезду
+      createStar(e.clientX, e.clientY);
     });
+
+    function createStar(x, y) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      
+      // Случайный размер звезды
+      const size = Math.random() * 4 + 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      
+      // Случайный цвет звезды
+      const colors = ['#ffffff', '#ffff00', '#ff9900', '#00ffff'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      star.style.background = color;
+      star.style.boxShadow = `0 0 ${size * 2}px ${color}, 0 0 ${size * 3}px ${color}`;
+      
+      star.style.left = x + 'px';
+      star.style.top = y + 'px';
+      
+      document.body.appendChild(star);
+      
+      // Добавить в массив и ограничить количество
+      stars.push({
+        element: star,
+        x: x,
+        y: y,
+        size: size,
+        opacity: 1,
+        life: 100 + Math.random() * 100
+      });
+      
+      if (stars.length > maxStars) {
+        const oldStar = stars.shift();
+        oldStar.element.remove();
+      }
+    }
+
+    // Анимация звезд
+    function animateStars() {
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const star = stars[i];
+        star.life--;
+        star.opacity = star.life / 100;
+        
+        star.element.style.opacity = star.opacity;
+        
+        // Удалить звезду если жизнь закончилась
+        if (star.life <= 0) {
+          star.element.remove();
+          stars.splice(i, 1);
+        }
+      }
+      
+      requestAnimationFrame(animateStars);
+    }
+
+    // Запустить анимацию
+    animateStars();
+
+    // Создать несколько звезд при загрузке для эффекта
+    setTimeout(() => {
+      for (let i = 0; i < 10; i++) {
+        setTimeout(() => {
+          if (cursorDot.style.left) {
+            createStar(
+              parseInt(cursorDot.style.left) + (Math.random() - 0.5) * 50,
+              parseInt(cursorDot.style.top) + (Math.random() - 0.5) * 50
+            );
+          }
+        }, i * 100);
+      }
+    }, 500);
   </script>
 </body>
 </html>
