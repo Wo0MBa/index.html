@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Распад на осколки</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #object {
+      width: 300px;
+      height: 300px;
+      background: url('https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=300&h=300&fit=crop') center/cover;
+      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+
+    #object:hover {
+      transform: scale(1.03);
+    }
+
+    .shard {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="object"></div>
+
+  <script>
+    document.getElementById('object').addEventListener('click', function() {
+      const rect = this.getBoundingClientRect();
+      const shards = 30;
+      this.style.display = 'none';
+
+      for (let i = 0; i < shards; i++) {
+        const shard = document.createElement('div');
+        shard.className = 'shard';
+        
+        // Размер осколка
+        const size = 15 + Math.random() * 25;
+        shard.style.width = `${size}px`;
+        shard.style.height = `${size}px`;
+        
+        // Фон осколка — часть оригинальной картинки
+        shard.style.background = `url('https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=300&h=300&fit=crop')`;
+        shard.style.backgroundSize = '300px 300px';
+        shard.style.backgroundPosition = `-${Math.random() * 280}px -${Math.random() * 280}px`;
+        
+        // Начальная позиция
+        shard.style.left = `${rect.left + rect.width / 2}px`;
+        shard.style.top = `${rect.top + rect.height / 2}px`;
+        
+        document.body.appendChild(shard);
+
+        // Движение осколка
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 3 + Math.random() * 6;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        const rotation = (Math.random() - 0.5) * 30;
+
+        let x = rect.left + rect.width / 2;
+        let y = rect.top + rect.height / 2;
+        let rot = 0;
+
+        const move = () => {
+          x += vx;
+          y += vy;
+          rot += rotation;
+          shard.style.left = `${x}px`;
+          shard.style.top = `${y}px`;
+          shard.style.transform = `rotate(${rot}deg)`;
+          shard.style.opacity = parseFloat(shard.style.opacity || 1) - 0.015;
+
+          if (parseFloat(shard.style.opacity) > 0) {
+            requestAnimationFrame(move);
+          } else {
+            shard.remove();
+          }
+        };
+        move();
+      }
+    });
+  </script>
+</body>
+</html>
