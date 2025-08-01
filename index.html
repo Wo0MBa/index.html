@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Простой тест звука</title>
+    <title>Тест звука с Data URI</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
         button { 
@@ -15,20 +15,23 @@
             border-radius: 5px;
         }
         button:hover { background: #45a049; }
+        .error { color: red; }
+        .success { color: green; }
     </style>
 </head>
 <body>
-    <h1>Тест звука</h1>
+    <h1>Тест звука с Data URI</h1>
     
     <audio id="test-sound" controls>
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+        <!-- Встроенный звук в формате WAV (Data URI) -->
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAA" type="audio/wav">
         Ваш браузер не поддерживает аудио.
     </audio>
     
     <br><br>
     
     <button onclick="playSound()">▶ Воспроизвести звук</button>
-    <button onclick="testAutoplay()">▶ Автовоспроизведение</button>
+    <button onclick="playDifferentSound()">▶ Другой звук</button>
     
     <div id="status" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
 
@@ -36,8 +39,13 @@
         const sound = document.getElementById('test-sound');
         const status = document.getElementById('status');
         
-        function updateStatus(message) {
+        // Второй звуковой файл (более длинный щелчок)
+        const sound2 = new Audio();
+        sound2.src = "data:audio/wav;base64,UklGRnwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+        
+        function updateStatus(message, type = '') {
             status.innerHTML = message;
+            status.className = type;
             console.log(message);
         }
         
@@ -47,22 +55,33 @@
                 const promise = sound.play();
                 if (promise !== undefined) {
                     promise
-                        .then(() => updateStatus('✅ Звук воспроизводится успешно!'))
+                        .then(() => updateStatus('✅ Звук 1 воспроизводится успешно!', 'success'))
                         .catch(error => {
-                            updateStatus('❌ Ошибка воспроизведения: ' + error.message);
+                            updateStatus('❌ Ошибка воспроизведения звук 1: ' + error.message, 'error');
                         });
                 }
             } catch (error) {
-                updateStatus('❌ Ошибка: ' + error.message);
+                updateStatus('❌ Ошибка звук 1: ' + error.message, 'error');
             }
         }
         
-        function testAutoplay() {
-            updateStatus('Тестируем автовоспроизведение...');
-            playSound();
+        function playDifferentSound() {
+            try {
+                sound2.currentTime = 0;
+                const promise = sound2.play();
+                if (promise !== undefined) {
+                    promise
+                        .then(() => updateStatus('✅ Звук 2 воспроизводится успешно!', 'success'))
+                        .catch(error => {
+                            updateStatus('❌ Ошибка воспроизведения звук 2: ' + error.message, 'error');
+                        });
+                }
+            } catch (error) {
+                updateStatus('❌ Ошибка звук 2: ' + error.message, 'error');
+            }
         }
         
-        // Попытка активации звука при первом взаимодействии
+        // Активация звука при первом взаимодействии
         document.addEventListener('click', function firstInteraction() {
             updateStatus('🔊 Первое взаимодействие зарегистрировано. Теперь звуки должны работать.');
             document.removeEventListener('click', firstInteraction);
