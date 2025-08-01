@@ -1,128 +1,100 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Курсор со звездами</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-      height: 100vh;
-      cursor: none;
-    }
-
-    .star {
-      position: absolute;
-      pointer-events: none;
-      background: #fff;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #fff, 0 0 20px #fff;
-      transform: translate(-50%, -50%);
-    }
-
-    .cursor-dot {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: #fff;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      box-shadow: 0 0 10px #fff, 0 0 20px #fff;
-      z-index: 1000;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест звука в iframe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #333;
+            margin: 20px 0;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+    </style>
 </head>
 <body>
-  <div class="cursor-dot"></div>
-
-  <script>
-    const cursorDot = document.querySelector('.cursor-dot');
-    const stars = [];
-    const maxStars = 50;
-    
-    // Скрыть стандартный курсор и следовать за мышью
-    document.addEventListener('mousemove', (e) => {
-      cursorDot.style.left = e.clientX + 'px';
-      cursorDot.style.top = e.clientY + 'px';
-      
-      // Создать новую звезду
-      createStar(e.clientX, e.clientY);
-    });
-
-    function createStar(x, y) {
-      const star = document.createElement('div');
-      star.className = 'star';
-      
-      // Случайный размер звезды
-      const size = Math.random() * 4 + 1;
-      star.style.width = size + 'px';
-      star.style.height = size + 'px';
-      
-      // Случайный цвет звезды
-      const colors = ['#ffffff', '#ffff00', '#ff9900', '#00ffff'];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      star.style.background = color;
-      star.style.boxShadow = `0 0 ${size * 2}px ${color}, 0 0 ${size * 3}px ${color}`;
-      
-      star.style.left = x + 'px';
-      star.style.top = y + 'px';
-      
-      document.body.appendChild(star);
-      
-      // Добавить в массив и ограничить количество
-      stars.push({
-        element: star,
-        x: x,
-        y: y,
-        size: size,
-        opacity: 1,
-        life: 100 + Math.random() * 100
-      });
-      
-      if (stars.length > maxStars) {
-        const oldStar = stars.shift();
-        oldStar.element.remove();
-      }
-    }
-
-    // Анимация звезд
-    function animateStars() {
-      for (let i = stars.length - 1; i >= 0; i--) {
-        const star = stars[i];
-        star.life--;
-        star.opacity = star.life / 100;
+    <div class="test-container">
+        <h1>Тест звука в iframe</h1>
+        <p>Нажмите кнопку ниже, чтобы загрузить виджет в iframe:</p>
         
-        star.element.style.opacity = star.opacity;
+        <button onclick="loadWidget()">Загрузить виджет</button>
+        <button onclick="loadTestSound()">Тест прямого звука</button>
         
-        // Удалить звезду если жизнь закончилась
-        if (star.life <= 0) {
-          star.element.remove();
-          stars.splice(i, 1);
+        <div id="iframe-container"></div>
+        
+        <audio id="direct-sound" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        function loadWidget() {
+            const container = document.getElementById('iframe-container');
+            container.innerHTML = `
+                <h2>Виджет в iframe:</h2>
+                <iframe 
+                    src="https://wo0mba.github.io/my-genially-interactive/widget.html?image=https://i.pinimg.com/originals/fc/a7/66/fca766643693b021645b276bd61ad09e.png&words=Твори Верь Мечтай Действуй" 
+                    width="100%" 
+                    height="400" 
+                    frameborder="0">
+                </iframe>
+                <p><strong>Инструкция:</strong></p>
+                <ol>
+                    <li>Кликните где-нибудь на этой странице (активация звука)</li>
+                    <li>Затем кликните на изображения в виджете</li>
+                    <li>Должны воспроизводиться звуки</li>
+                </ol>
+            `;
         }
-      }
-      
-      requestAnimationFrame(animateStars);
-    }
 
-    // Запустить анимацию
-    animateStars();
+        function loadTestSound() {
+            const sound = document.getElementById('direct-sound');
+            try {
+                sound.currentTime = 0;
+                sound.play();
+                alert('Звук воспроизводится! Теперь попробуйте виджет в iframe.');
+            } catch (e) {
+                alert('Звук заблокирован. Кликните где-нибудь на странице и попробуйте снова.');
+            }
+        }
 
-    // Создать несколько звезд при загрузке для эффекта
-    setTimeout(() => {
-      for (let i = 0; i < 10; i++) {
-        setTimeout(() => {
-          if (cursorDot.style.left) {
-            createStar(
-              parseInt(cursorDot.style.left) + (Math.random() - 0.5) * 50,
-              parseInt(cursorDot.style.top) + (Math.random() - 0.5) * 50
-            );
-          }
-        }, i * 100);
-      }
-    }, 500);
-  </script>
+        // Автоматическая активация звука при первом клике
+        document.addEventListener('click', function() {
+            const sound = document.getElementById('direct-sound');
+            sound.volume = 0;
+            sound.play().then(() => {
+                sound.pause();
+                sound.currentTime = 0;
+                sound.volume = 1;
+            });
+        }, { once: true });
+    </script>
 </body>
 </html>
